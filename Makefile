@@ -4,9 +4,9 @@
 BUILD_DIR := build
 
 ifeq ($(shell uname),Darwin)
-APP_BIN := $(BUILD_DIR)/Rainbow Triangle.app/Contents/MacOS/Rainbow Triangle
+APP_BIN := $(BUILD_DIR)/JadeFX-Rainbow-Triangle.app/Contents/MacOS/JadeFX-Rainbow-Triangle
 else
-APP_BIN := $(BUILD_DIR)/rainbow-triangle
+APP_BIN := $(BUILD_DIR)/JadeFX-Rainbow-Triangle
 endif
 
 .PHONY: all run clean

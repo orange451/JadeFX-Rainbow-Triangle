@@ -18,7 +18,7 @@ constexpr int kWindowWidth = 960;
 constexpr int kWindowHeight = 640;
 constexpr int kMinWidth = 320;
 constexpr int kMinHeight = 240;
-constexpr const char* kTitle = "Hello OpenGL — Rainbow Triangle";
+constexpr const char* kTitle = "JadeFX-Rainbow-Triangle";
 
 char g_glfw_error[512] = {};
 

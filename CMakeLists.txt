@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.16)
 if(POLICY CMP0135)
     cmake_policy(SET CMP0135 NEW)
 endif()
-project(rainbow-triangle LANGUAGES CXX)
+project(JadeFX-Rainbow-Triangle LANGUAGES CXX)
 
 # JadeFX's macOS error dialog is Objective-C++. Enable it here so a nested
 # add_subdirectory does not have to turn the language on after this cache exists.
@@ -49,7 +49,7 @@ else()
 endif()
 
 # MACOSX_BUNDLE is ignored on Windows and Linux, where this stays a normal executable.
-add_executable(rainbow-triangle MACOSX_BUNDLE
+add_executable(JadeFX-Rainbow-Triangle MACOSX_BUNDLE
     src/main.cpp
     src/gl.cpp
     src/ShaderFile.cpp
@@ -63,19 +63,19 @@ if(NOT EXISTS "${JADEFX_CPP_DIR}/CMakeLists.txt")
 endif()
 add_subdirectory("${JADEFX_CPP_DIR}" "${CMAKE_BINARY_DIR}/jadefx" EXCLUDE_FROM_ALL)
 
-target_link_libraries(rainbow-triangle PRIVATE ${RAINBOW_GLFW_TARGET} jadefx)
+target_link_libraries(JadeFX-Rainbow-Triangle PRIVATE ${RAINBOW_GLFW_TARGET} jadefx)
 
 if(MSVC)
-    target_compile_options(rainbow-triangle PRIVATE /W4 /utf-8)
+    target_compile_options(JadeFX-Rainbow-Triangle PRIVATE /W4 /utf-8)
 else()
-    target_compile_options(rainbow-triangle PRIVATE -Wall -Wextra)
+    target_compile_options(JadeFX-Rainbow-Triangle PRIVATE -Wall -Wextra)
 endif()
 
 if(APPLE)
-    set_target_properties(rainbow-triangle PROPERTIES
-        OUTPUT_NAME "Rainbow Triangle"
-        MACOSX_BUNDLE_BUNDLE_NAME "Rainbow Triangle"
-        MACOSX_BUNDLE_GUI_IDENTIFIER "local.rainbow-triangle"
+    set_target_properties(JadeFX-Rainbow-Triangle PROPERTIES
+        OUTPUT_NAME "JadeFX-Rainbow-Triangle"
+        MACOSX_BUNDLE_BUNDLE_NAME "JadeFX-Rainbow-Triangle"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "local.jadefx-rainbow-triangle"
         MACOSX_BUNDLE_BUNDLE_VERSION "1.0"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0"
         MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/macos/Info.plist.in"
@@ -83,25 +83,25 @@ if(APPLE)
 
     # Copy the runtime shaders into the bundle, then sign it so Finder can launch it.
     add_custom_target(bundle-shaders ALL
-        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_BUNDLE_CONTENT_DIR:rainbow-triangle>/Resources/shaders"
+        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_BUNDLE_CONTENT_DIR:JadeFX-Rainbow-Triangle>/Resources/shaders"
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/shaders"
-            "$<TARGET_BUNDLE_CONTENT_DIR:rainbow-triangle>/Resources/shaders"
+            "$<TARGET_BUNDLE_CONTENT_DIR:JadeFX-Rainbow-Triangle>/Resources/shaders"
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${JADEFX_CPP_DIR}/res/shaders"
-            "$<TARGET_BUNDLE_CONTENT_DIR:rainbow-triangle>/Resources/shaders"
-        COMMAND codesign --force --sign - "$<TARGET_BUNDLE_DIR:rainbow-triangle>"
-        DEPENDS rainbow-triangle
+            "$<TARGET_BUNDLE_CONTENT_DIR:JadeFX-Rainbow-Triangle>/Resources/shaders"
+        COMMAND codesign --force --sign - "$<TARGET_BUNDLE_DIR:JadeFX-Rainbow-Triangle>"
+        DEPENDS JadeFX-Rainbow-Triangle
         VERBATIM
     )
 else()
     # JadeFX loads shaders from shaders/ beside the executable.
-    add_custom_command(TARGET rainbow-triangle POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:rainbow-triangle>/shaders"
+    add_custom_command(TARGET JadeFX-Rainbow-Triangle POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:JadeFX-Rainbow-Triangle>/shaders"
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_CURRENT_SOURCE_DIR}/shaders" "$<TARGET_FILE_DIR:rainbow-triangle>/shaders"
+            "${CMAKE_CURRENT_SOURCE_DIR}/shaders" "$<TARGET_FILE_DIR:JadeFX-Rainbow-Triangle>/shaders"
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${JADEFX_CPP_DIR}/res/shaders" "$<TARGET_FILE_DIR:rainbow-triangle>/shaders"
+            "${JADEFX_CPP_DIR}/res/shaders" "$<TARGET_FILE_DIR:JadeFX-Rainbow-Triangle>/shaders"
         VERBATIM
     )
 endif()

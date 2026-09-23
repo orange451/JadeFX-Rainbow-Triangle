@@ -47,6 +47,7 @@ bool Renderer::initialize() {
         1, 3, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<void*>(2 * sizeof(float)));
 
     glBindVertexArray(0);
+    angleLocation_ = glGetUniformLocation(program_, "uAngle");
     glClearColor(0.06f, 0.07f, 0.09f, 1.0f);
 
     const GLenum error = glGetError();
@@ -60,14 +61,21 @@ bool Renderer::initialize() {
     return true;
 }
 
-void Renderer::draw(int framebufferWidth, int framebufferHeight) {
+void Renderer::draw(int framebufferWidth, int framebufferHeight, float angleDegrees) {
     if (!ready_ || framebufferWidth <= 0 || framebufferHeight <= 0) {
         return;
     }
 
+    // The UI pass may leave a scissor and blending enabled.
+    glDisable(GL_SCISSOR_TEST);
+    glDisable(GL_BLEND);
     glViewport(0, 0, framebufferWidth, framebufferHeight);
     glClear(GL_COLOR_BUFFER_BIT);
     glUseProgram(program_);
+    const float radians = angleDegrees * 0.01745329252f;
+    if (angleLocation_ >= 0) {
+        glUniform1f(angleLocation_, radians);
+    }
     glBindVertexArray(vao_);
     glDrawArrays(GL_TRIANGLES, 0, 3);
     glBindVertexArray(0);

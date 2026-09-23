@@ -60,6 +60,12 @@ using GLsizeiptr = std::ptrdiff_t;
 #ifdef GL_LINK_STATUS
 #undef GL_LINK_STATUS
 #endif
+#ifdef GL_BLEND
+#undef GL_BLEND
+#endif
+#ifdef GL_SCISSOR_TEST
+#undef GL_SCISSOR_TEST
+#endif
 constexpr GLboolean GL_FALSE = 0;
 constexpr GLboolean GL_TRUE = 1;
 constexpr GLenum GL_NO_ERROR = 0;
@@ -74,6 +80,8 @@ constexpr GLenum GL_FRAGMENT_SHADER = 0x8B30;
 constexpr GLenum GL_VERTEX_SHADER = 0x8B31;
 constexpr GLenum GL_COMPILE_STATUS = 0x8B81;
 constexpr GLenum GL_LINK_STATUS = 0x8B82;
+constexpr GLenum GL_BLEND = 0x0BE2;
+constexpr GLenum GL_SCISSOR_TEST = 0x0C11;
 
 // Names are prefixed so they do not collide with libGL's exported functions.
 extern const GLubyte* (*rt_glGetString)(GLenum name);
@@ -104,6 +112,9 @@ extern void (*rt_glBufferData)(GLenum target, GLsizeiptr size, const void* data,
 extern void (*rt_glEnableVertexAttribArray)(GLuint index);
 extern void (*rt_glVertexAttribPointer)(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* pointer);
 extern void (*rt_glDrawArrays)(GLenum mode, GLint first, GLsizei count);
+extern void (*rt_glDisable)(GLenum cap);
+extern GLint (*rt_glGetUniformLocation)(GLuint program, const GLchar* name);
+extern void (*rt_glUniform1f)(GLint location, GLfloat v0);
 
 #define glGetString rt_glGetString
 #define glGetError rt_glGetError
@@ -133,6 +144,9 @@ extern void (*rt_glDrawArrays)(GLenum mode, GLint first, GLsizei count);
 #define glEnableVertexAttribArray rt_glEnableVertexAttribArray
 #define glVertexAttribPointer rt_glVertexAttribPointer
 #define glDrawArrays rt_glDrawArrays
+#define glDisable rt_glDisable
+#define glGetUniformLocation rt_glGetUniformLocation
+#define glUniform1f rt_glUniform1f
 
 using GlGetProcAddress = void* (*)(const char* name);
 

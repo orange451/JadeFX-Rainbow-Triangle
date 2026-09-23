@@ -30,6 +30,9 @@ void (*rt_glBufferData)(GLenum, GLsizeiptr, const void*, GLenum) = nullptr;
 void (*rt_glEnableVertexAttribArray)(GLuint) = nullptr;
 void (*rt_glVertexAttribPointer)(GLuint, GLint, GLenum, GLboolean, GLsizei, const void*) = nullptr;
 void (*rt_glDrawArrays)(GLenum, GLint, GLsizei) = nullptr;
+void (*rt_glDisable)(GLenum) = nullptr;
+GLint (*rt_glGetUniformLocation)(GLuint, const GLchar*) = nullptr;
+void (*rt_glUniform1f)(GLint, GLfloat) = nullptr;
 
 bool LoadGl(GlGetProcAddress get_proc) {
     if (get_proc == nullptr) {
@@ -75,6 +78,9 @@ bool LoadGl(GlGetProcAddress get_proc) {
     LOAD(EnableVertexAttribArray);
     LOAD(VertexAttribPointer);
     LOAD(DrawArrays);
+    LOAD(Disable);
+    LOAD(GetUniformLocation);
+    LOAD(Uniform1f);
 
 #undef LOAD
     return true;

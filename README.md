@@ -1,16 +1,8 @@
 # JadeFX-Rainbow-Triangle
 
-An OpenGL 4.1 window that draws a rainbow triangle and lays a JadeFX interface on top of it. The triangle spins about its vertical axis. JadeFX draws the labels, the spin checkbox, and the angle slider into the same framebuffer.
+An OpenGL 4.1 window that draws a rainbow triangle and lays a JadeFX interface on top of it.
 
 ![JadeFX-Rainbow-Triangle window](docs/screenshot.png)
-
-The corners of the triangle are red, green, and blue. The rasterizer blends those colors across the face. A translucent panel in the middle reads:
-
-- Hello World!
-- OpenGL drawn straight to window.
-- JadeFX ontop!
-
-**Spin** is on when the window opens, and the triangle turns at 90 degrees per second. Uncheck it to hold the current angle. The slider runs from 0 to 360 degrees: the thumb follows the spin, and dragging it sets the angle. Escape closes the window. The frames-per-second counter in the corner is also printed to the terminal about once a second.
 
 ## Build
 

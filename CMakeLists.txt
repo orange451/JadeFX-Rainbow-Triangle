@@ -54,7 +54,19 @@ add_executable(JadeFX-Rainbow-Triangle MACOSX_BUNDLE
     src/gl.cpp
     src/ShaderFile.cpp
     src/Renderer.cpp
+    src/PresentClock.cpp
 )
+
+# PresentClock schedules an AppKit timer during live resize. The rest of the
+# file stays C++; only this translation unit is compiled as Objective-C++.
+if(APPLE)
+    set_source_files_properties(src/PresentClock.cpp PROPERTIES LANGUAGE OBJCXX)
+    set_target_properties(JadeFX-Rainbow-Triangle PROPERTIES
+        OBJCXX_STANDARD 17
+        OBJCXX_STANDARD_REQUIRED YES
+        OBJCXX_EXTENSIONS NO
+    )
+endif()
 
 # An explicit checkout wins. A sibling named JadeFX_CPP is next. Otherwise
 # CMake clones the library, so this tree is enough to build.
@@ -98,6 +110,9 @@ else()
 endif()
 
 target_link_libraries(JadeFX-Rainbow-Triangle PRIVATE ${RAINBOW_GLFW_TARGET} jadefx)
+if(APPLE)
+    target_link_libraries(JadeFX-Rainbow-Triangle PRIVATE "-framework CoreVideo")
+endif()
 
 if(MSVC)
     target_compile_options(JadeFX-Rainbow-Triangle PRIVATE /W4 /utf-8)

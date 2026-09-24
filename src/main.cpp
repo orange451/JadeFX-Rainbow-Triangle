@@ -6,6 +6,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
+#include "PresentClock.hpp"
 #include "Renderer.hpp"
 #include "gl.hpp"
 #include "jadefx/jadefx.hpp"
@@ -67,9 +68,10 @@ FrameState* StateOf(GLFWwindow* window) {
 
 void OnKey(GLFWwindow* window, int key, int /*scancode*/, int action, int mods);
 
-// Cocoa and Win32 do not return from glfwPollEvents while the pointer is dragging
-// the window border. The frame has to be drawn from the callbacks that nested loop
-// already invokes, or the window stops updating until the drag ends.
+// Cocoa and Win32 do not return from the event wait while the pointer is dragging
+// the window border. Size and refresh callbacks draw when the frame changes.
+// Holding the border still never changes the frame, so PresentClock draws those
+// blanks from a timer on the tracking run loop.
 struct FrameState {
     GLFWwindow* window = nullptr;
     Renderer* renderer = nullptr;
@@ -78,6 +80,7 @@ struct FrameState {
     jadefx::CheckBox* spinBox = nullptr;
     jadefx::Slider* angleSlider = nullptr;
     bool writingSlider = false;
+    PresentClock* clock = nullptr;
     double angleDeg = 0.0;
     double spinClock = 0.0;
     bool drawing = false;
@@ -213,17 +216,26 @@ void OnCursorEnter(GLFWwindow* window, int entered) {
     state->stage->pushMove(x, y);
 }
 
-void OnContentChange(GLFWwindow* window, int, int) {
-    if (FrameState* state = StateOf(window)) {
-        DrawFrame(*state);
+void DrawFromPlatform(GLFWwindow* window) {
+    FrameState* state = StateOf(window);
+    if (state == nullptr) {
+        return;
+    }
+    DrawFrame(*state);
+    // The resize timer presents from the same blank counter. Consuming the
+    // blank here keeps a moving border from presenting twice.
+    if (state->clock != nullptr) {
+        state->clock->acknowledge();
     }
 }
 
-void OnRefresh(GLFWwindow* window) {
-    if (FrameState* state = StateOf(window)) {
-        DrawFrame(*state);
-    }
+void PresentResizeFrame(void* context) {
+    DrawFrame(*static_cast<FrameState*>(context));
 }
+
+void OnContentChange(GLFWwindow* window, int, int) { DrawFromPlatform(window); }
+
+void OnRefresh(GLFWwindow* window) { DrawFromPlatform(window); }
 
 }  // namespace
 
@@ -243,6 +255,8 @@ int main() {
     glfwSetWindowSizeLimits(window, kMinWidth, kMinHeight, GLFW_DONT_CARE, GLFW_DONT_CARE);
     glfwSetKeyCallback(window, OnKey);
     glfwMakeContextCurrent(window);
+    // Interval 0 keeps a swap from blocking. PresentClock is what limits presents
+    // to one image per refresh, so the window server is not flooded.
     glfwSwapInterval(0);
 
     const auto proc_address = [](const char* name) -> void* {
@@ -355,12 +369,25 @@ int main() {
     glfwSetFramebufferSizeCallback(window, OnContentChange);
     glfwSetWindowRefreshCallback(window, OnRefresh);
 
-    while (glfwWindowShouldClose(window) != GLFW_TRUE) {
-        glfwPollEvents();
-        if (glfwWindowShouldClose(window) == GLFW_TRUE) {
-            break;
-        }
+    {
+        // The clock is stopped before the window is destroyed. Its display-link
+        // callback posts a GLFW event, and that has to happen while GLFW is still alive.
+        PresentClock clock(window);
+        frame.clock = &clock;
+        clock.setResizePresent(PresentResizeFrame, &frame);
         DrawFrame(frame);
+        while (glfwWindowShouldClose(window) != GLFW_TRUE) {
+            clock.follow(window);
+            if (!clock.waitForNewBlank()) {
+                continue;
+            }
+            if (glfwWindowShouldClose(window) == GLFW_TRUE) {
+                break;
+            }
+            DrawFrame(frame);
+            clock.acknowledge();
+        }
+        frame.clock = nullptr;
     }
 
     angleSlider->setOnValueChanged(nullptr);

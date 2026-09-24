@@ -56,12 +56,46 @@ add_executable(JadeFX-Rainbow-Triangle MACOSX_BUNDLE
     src/Renderer.cpp
 )
 
-# JadeFX draws the FPS label into this window. Its own samples stay out of `all`.
-set(JADEFX_CPP_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../JadeFX_CPP" CACHE PATH "JadeFX_CPP source directory")
-if(NOT EXISTS "${JADEFX_CPP_DIR}/CMakeLists.txt")
-    message(FATAL_ERROR "JadeFX_CPP was not found at ${JADEFX_CPP_DIR}")
+# An explicit checkout wins. A sibling named JadeFX_CPP is next. Otherwise
+# CMake clones the library, so this tree is enough to build.
+set(JADEFX_CPP_DIR "" CACHE PATH "Path to a JadeFX checkout. Empty downloads it unless ../JadeFX_CPP exists.")
+if(JADEFX_CPP_DIR)
+    set(JADEFX_LOCAL "${JADEFX_CPP_DIR}")
+elseif(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../JadeFX_CPP/CMakeLists.txt")
+    set(JADEFX_LOCAL "${CMAKE_CURRENT_SOURCE_DIR}/../JadeFX_CPP")
+else()
+    set(JADEFX_LOCAL "")
 endif()
-add_subdirectory("${JADEFX_CPP_DIR}" "${CMAKE_BINARY_DIR}/jadefx" EXCLUDE_FROM_ALL)
+if(JADEFX_LOCAL)
+    if(NOT EXISTS "${JADEFX_LOCAL}/CMakeLists.txt")
+        message(FATAL_ERROR "JadeFX was not found at ${JADEFX_LOCAL}")
+    endif()
+    add_subdirectory("${JADEFX_LOCAL}" "${CMAKE_BINARY_DIR}/jadefx" EXCLUDE_FROM_ALL)
+    set(JADEFX_SOURCE_ROOT "${JADEFX_LOCAL}")
+else()
+    include(FetchContent)
+    if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.28")
+        FetchContent_Declare(
+            jadefx
+            GIT_REPOSITORY https://github.com/orange451/JadeFX_CPP.git
+            GIT_TAG master
+            EXCLUDE_FROM_ALL
+        )
+        FetchContent_MakeAvailable(jadefx)
+    else()
+        FetchContent_Declare(
+            jadefx
+            GIT_REPOSITORY https://github.com/orange451/JadeFX_CPP.git
+            GIT_TAG master
+        )
+        FetchContent_GetProperties(jadefx)
+        if(NOT jadefx_POPULATED)
+            FetchContent_Populate(jadefx)
+            add_subdirectory("${jadefx_SOURCE_DIR}" "${jadefx_BINARY_DIR}" EXCLUDE_FROM_ALL)
+        endif()
+    endif()
+    set(JADEFX_SOURCE_ROOT "${jadefx_SOURCE_DIR}")
+endif()
 
 target_link_libraries(JadeFX-Rainbow-Triangle PRIVATE ${RAINBOW_GLFW_TARGET} jadefx)
 
@@ -88,20 +122,19 @@ if(APPLE)
             "${CMAKE_CURRENT_SOURCE_DIR}/shaders"
             "$<TARGET_BUNDLE_CONTENT_DIR:JadeFX-Rainbow-Triangle>/Resources/shaders"
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${JADEFX_CPP_DIR}/res/shaders"
+            "${JADEFX_SOURCE_ROOT}/res/shaders"
             "$<TARGET_BUNDLE_CONTENT_DIR:JadeFX-Rainbow-Triangle>/Resources/shaders"
         COMMAND codesign --force --sign - "$<TARGET_BUNDLE_DIR:JadeFX-Rainbow-Triangle>"
         DEPENDS JadeFX-Rainbow-Triangle
         VERBATIM
     )
 else()
-    # JadeFX loads shaders from shaders/ beside the executable.
     add_custom_command(TARGET JadeFX-Rainbow-Triangle POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:JadeFX-Rainbow-Triangle>/shaders"
         COMMAND ${CMAKE_COMMAND} -E copy_directory
             "${CMAKE_CURRENT_SOURCE_DIR}/shaders" "$<TARGET_FILE_DIR:JadeFX-Rainbow-Triangle>/shaders"
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${JADEFX_CPP_DIR}/res/shaders" "$<TARGET_FILE_DIR:JadeFX-Rainbow-Triangle>/shaders"
+            "${JADEFX_SOURCE_ROOT}/res/shaders" "$<TARGET_FILE_DIR:JadeFX-Rainbow-Triangle>/shaders"
         VERBATIM
     )
 endif()

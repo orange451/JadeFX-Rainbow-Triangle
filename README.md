@@ -6,7 +6,7 @@ An OpenGL 4.1 window that draws a rainbow triangle and lays a JadeFX interface o
 
 ## Build
 
-JadeFX lives in a sibling directory, `../JadeFX_CPP`. CMake fetches GLFW 3.5.1 when it is not already installed.
+This directory is enough. `make` clones the latest commit of [JadeFX](https://github.com/orange451/JadeFX_CPP) on `master`, and a later build updates that clone. It downloads GLFW 3.5.1 when GLFW is not already installed.
 
 ```sh
 make
@@ -22,6 +22,6 @@ cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --parallel
 ```
 
-Point `JADEFX_CPP_DIR` at the JadeFX source if it is not next to this tree. A Linux build of the fetched GLFW also needs the X11 and Wayland development packages.
+A checkout named `JadeFX_CPP` next to this directory is used instead of the clone. Point `JADEFX_CPP_DIR` at the source to use some other checkout. A Linux build of the fetched GLFW also needs the X11 and Wayland development packages.
 
-Shaders are loaded at startup from the app bundle (`Contents/Resources/shaders` on macOS) or from a `shaders/` directory beside the executable. Editing `shaders/triangle.vert` or `shaders/triangle.frag` takes effect on the next launch.
+Shaders are loaded at startup from the app bundle (`Contents/Resources/shaders` on macOS) or from a `shaders/` directory beside the executable. Editing `shaders/triangle.vert` or `shaders/triangle.frag` takes effect on the next launch. The build also copies JadeFX's interface shaders into that same directory.
